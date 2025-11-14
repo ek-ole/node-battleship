@@ -7,15 +7,29 @@
     "scripts": {
         "start": "node ./index.js",
         "start:dev": "nodemon ./index.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "tsx server/index.ts",
+        "dev:watch": "nodemon --exec tsx server/index.ts",
+         "lint": "eslint server/**/*.ts",
+    "fix": "eslint server/**/*.ts --fix", 
+    "format": "prettier --write server/**/*.ts"
     },
     "author": "Andrei Auchynnikau",
     "keywords": [],
     "license": "ISC",
     "devDependencies": {
-        "nodemon": "^2.0.16"
+        "@typescript-eslint/eslint-plugin": "^8.46.4",
+        "@typescript-eslint/parser": "^8.46.4",
+        "eslint": "^9.39.1",
+        "eslint-config-prettier": "^10.1.8",
+        "nodemon": "^2.0.16",
+        "prettier": "^3.6.2"
     },
     "dependencies": {
+        "@types/node": "^24.10.1",
+        "@types/ws": "^8.18.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.3",
         "ws": "^8.8.0"
     }
 }
