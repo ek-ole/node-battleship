@@ -1,2 +1,3 @@
-const test = 'hey';
-console.log(test);
+import { createWSServer } from "./websocket/server.js";
+
+createWSServer(3000);

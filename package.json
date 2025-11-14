@@ -10,9 +10,9 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "tsx server/index.ts",
         "dev:watch": "nodemon --exec tsx server/index.ts",
-         "lint": "eslint server/**/*.ts",
-    "fix": "eslint server/**/*.ts --fix", 
-    "format": "prettier --write server/**/*.ts"
+        "lint": "eslint server/**/*.ts",
+        "fix": "eslint server/**/*.ts --fix",
+        "format": "prettier --write server/**/*.ts"
     },
     "author": "Andrei Auchynnikau",
     "keywords": [],
@@ -23,7 +23,8 @@
         "eslint": "^9.39.1",
         "eslint-config-prettier": "^10.1.8",
         "nodemon": "^2.0.16",
-        "prettier": "^3.6.2"
+        "prettier": "^3.6.2",
+        "tsx": "^4.20.6"
     },
     "dependencies": {
         "@types/node": "^24.10.1",
