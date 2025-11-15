@@ -63,6 +63,15 @@ function handleCreateRoom(ws: WebSocket): void {
     return;
   }
 
+  const existingRoom = gameStorage.rooms.find((room) =>
+    room.roomUsers.some((user) => user.index === player.index)
+  );
+
+  if (existingRoom) {
+    console.log(`Player ${player.name} is already in room ${existingRoom.roomId}`)
+    return;
+  }
+  
   console.log(`Creating room for player: ${player.name}`);
 
   const newRoom = {
@@ -74,4 +83,27 @@ function handleCreateRoom(ws: WebSocket): void {
 
   console.log(`Room created: ${newRoom.roomId} with player ${player.name}`);
   console.log(`Total rooms: ${gameStorage.rooms.length}`);
+
+  sendUpdateRoomToAll();
+}
+
+function sendUpdateRoomToAll(): void {
+  const updateMessage = {
+    type: 'update_room',
+    data: JSON.stringify(
+      gameStorage.rooms.map((room) => ({
+        roomId: room.roomId,
+        roomUsers: room.roomUsers.map((user) => ({
+          name: user.name,
+          index: user.index,
+        })),
+      }))
+    ),
+    id: 0,
+  };
+
+  gameStorage.players.forEach((player) => {
+    player.ws.send(JSON.stringify(updateMessage));
+  });
+  console.log('Sent update_room to all clients');
 }
