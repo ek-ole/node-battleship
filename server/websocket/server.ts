@@ -1,6 +1,7 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import { WSMessage } from '../game/types.js';
 import { handleMessage } from './messageHandler.js';
+import { gameStorage } from './storage.js';
 
 export function createWSServer(port: number = 3000): WebSocketServer {
   const wss = new WebSocketServer({ port });
@@ -21,6 +22,8 @@ export function createWSServer(port: number = 3000): WebSocketServer {
 
     ws.on('close', () => {
       console.log('Client disconnected');
+      gameStorage.players.delete(ws);
+      console.log(`Players left: ${gameStorage.players.size}`);
     });
 
     ws.on('error', (error) => {

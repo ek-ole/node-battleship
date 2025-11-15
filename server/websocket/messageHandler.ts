@@ -1,5 +1,6 @@
 import { WebSocket } from 'ws';
-import { RegResponse, WSMessage } from '../game/types.js';
+import { WSMessage } from '../game/types.js';
+import { gameStorage, getNextPlayerId } from './storage.js';
 
 export function handleMessage(ws: WebSocket, message: WSMessage): void {
   switch (message.type) {
@@ -20,7 +21,16 @@ function handleRegCommand(ws: WebSocket, message: WSMessage): void {
    }
   console.log('Processing registration for:', userData.name);
 
-  const response: RegResponse = {
+  const playerIndex = getNextPlayerId();
+  const player = {
+    ws,
+    name: userData.name,
+    index: playerIndex,
+  };
+
+  gameStorage.players.set(ws, player);
+
+  const response = {
     type: 'reg',
     data: JSON.stringify({
       name: userData.name,
@@ -29,8 +39,16 @@ function handleRegCommand(ws: WebSocket, message: WSMessage): void {
       errorText: '',
     }),
     id: 0,
-  };
+  };  
+
   const responseString = JSON.stringify(response);
   console.log('Sending response:', responseString);
   ws.send(responseString);
+
+  console.log(`Total players registered: ${gameStorage.players.size}`);
+  console.log('Current players:');
+  gameStorage.players.forEach((player) => {
+    console.log(`- ${player.name} (index: ${player.index})`);
+  });
+  
 }

@@ -12,9 +12,3 @@ export interface RegRequest {
   };
   id: 0;
 }
-
-export interface RegResponse {
-  type: 'reg';
-  data: string;
-  id: 0;
-}
