@@ -2,7 +2,7 @@ import { WebSocket } from 'ws';
 import { RegRequestData, WSMessage } from './types.js';
 import { gameStorage, getNextPlayerId } from './storage.js';
 import { handleAddUserToRoom, handleCreateRoom } from './roomHandler.js';
-import { sendToPlayer } from './messageSender.js';
+import { sendToPlayer, sendUpdateRoomToAll } from './messageSender.js';
 
 export function handleMessage(ws: WebSocket, message: WSMessage): void {
   switch (message.type) {
@@ -53,6 +53,7 @@ function handleRegCommand(ws: WebSocket, message: WSMessage): void {
   
   console.log('Sending response:', response);
   sendToPlayer(ws, response);
+  sendUpdateRoomToAll();
 
   console.log(`Total players registered: ${gameStorage.players.size}`);
   console.log('Current players:');
