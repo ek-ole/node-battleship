@@ -70,5 +70,27 @@ export function handleAddUserToRoom(ws: WebSocket, message: WSMessage): void {
 
   targetRoom.roomUsers.push(player);
   console.log(`Player ${player.name} joined room ${targetRoom.roomId}`);
+
+  if (targetRoom.roomUsers.length === 2) {
+    console.log(`Room ${targetRoom.roomId} is full, starting game`);
+
+    targetRoom.roomUsers.forEach((player) => {
+      const createGameMessage = {
+        type: 'create_game',
+        data: JSON.stringify({
+          idGame: targetRoom.roomId,
+          idPlayer: player.index,
+        }),
+        id: 0,
+      };
+      player.ws.send(JSON.stringify(createGameMessage));
+      console.log(`Sent create_game to player ${player.name}`);
+    });
+
+    gameStorage.rooms = gameStorage.rooms.filter(room => room.roomId !== targetRoom.roomId);
+    console.log(`Room ${targetRoom.roomId} removed from available rooms`);
+
+    sendUpdateRoomToAll();
+  }
 }
 
