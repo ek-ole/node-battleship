@@ -67,12 +67,31 @@ export interface StartGameResponseData {
   currentPlayerIndex: number;
 }
 
+export interface PlayerInGame {
+  index: number;
+  ws: WebSocket;
+  ships: Ship[];
+  ready: boolean;
+}
+
 export interface GameSession {
   gameId: number;
-  players: {
-    index: number;
-    ws: WebSocket;
-    ships: Ship[];
-    ready: boolean;
-  }[];
+  players: PlayerInGame[];
+}
+
+export interface Position {
+  x: number;
+  y: number;
+}
+
+export interface AttackResult {
+  status: 'miss' | 'shot' | 'killed';
+  hitShip?: Ship;
+  surroundingCells?: Position[];
+}
+
+export interface GameState {
+  currentPlayer: number;
+  attackedCells: Map<number, Position[]>; 
+  playerIndexes: number[];
 }

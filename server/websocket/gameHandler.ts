@@ -1,7 +1,13 @@
-import { addPlayerShips, areBothPlayersReady, createGameSession, getGameSession } from "./gameManager.js";
-import { sendToPlayer } from "./messageSender.js";
-import { validateShipPlacement } from "./shipManager.js";
-import { Room, StartGameResponseData, WSMessage } from "./types.js";
+import {
+  addPlayerShips,
+  areBothPlayersReady,
+  createGameSession,
+  getGameSession,
+} from './gameManager.js';
+import { initGameState } from './gameStateManager.js';
+import { sendToPlayer } from './messageSender.js';
+import { validateShipPlacement } from './shipManager.js';
+import { PlayerInGame, Room, StartGameResponseData, WSMessage } from './types.js';
 import { WebSocket } from 'ws';
 
 export function startGame(room: Room) {
@@ -10,17 +16,17 @@ export function startGame(room: Room) {
   createGameSession(room);
 
   room.roomUsers.forEach((player) => {
-        const createGameMessage = {
-          type: 'create_game',
-          data: JSON.stringify({
-            idGame: room.roomId,
-            idPlayer: player.index,
-          }),
-          id: 0,
-        };
-        sendToPlayer(player.ws, createGameMessage);
-        console.log(`Sent create_game to player ${player.name}`);
-      });
+    const createGameMessage = {
+      type: 'create_game',
+      data: JSON.stringify({
+        idGame: room.roomId,
+        idPlayer: player.index,
+      }),
+      id: 0,
+    };
+    sendToPlayer(player.ws, createGameMessage);
+    console.log(`Sent create_game to player ${player.name}`);
+  });
 }
 
 export function handleAddShips(ws: WebSocket, message: WSMessage): void {
@@ -49,10 +55,15 @@ export function sendStartGame(gameId: number): void {
   const gameSession = getGameSession(gameId);
   if (!gameSession) return;
 
-  const randomPlayerIndex = Math.floor(Math.random() * 2);
+  const players = gameSession.players;
+
+  const randomPlayerIndex = Math.floor(Math.random() * players.length);
   const firstPlayer = gameSession.players[randomPlayerIndex];
 
-  gameSession.players.forEach(player => {
+  const playerIndexes = players.map((p) => p.index);
+  initGameState(gameId, firstPlayer.index, playerIndexes);
+
+  gameSession.players.forEach((player: PlayerInGame) => {
     const startGameMessage = {
       type: 'start_game',
       data: JSON.stringify({
@@ -61,19 +72,19 @@ export function sendStartGame(gameId: number): void {
       } as StartGameResponseData),
       id: 0,
     };
-    sendToPlayer(player.ws, startGameMessage)
-     console.log(`Would send start_game to player ${player.index}`);
+    sendToPlayer(player.ws, startGameMessage);
+    console.log(`Would send start_game to player ${player.index}`);
   });
 
   const turnMessage = {
     type: 'turn',
     data: JSON.stringify({
-      currentPlayer: firstPlayer.index  
+      currentPlayer: firstPlayer.index,
     }),
-    id: 0
+    id: 0,
   };
 
-  gameSession.players.forEach(player => {
+  gameSession.players.forEach((player: PlayerInGame) => {
     sendToPlayer(player.ws, turnMessage);
   });
 

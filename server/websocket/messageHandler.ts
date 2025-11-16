@@ -4,6 +4,7 @@ import { gameStorage, getNextPlayerId } from './storage.js';
 import { handleAddUserToRoom, handleCreateRoom } from './roomHandler.js';
 import { sendToPlayer, sendUpdateRoomToAll } from './messageSender.js';
 import { handleAddShips } from './gameHandler.js';
+import { handleAttack, handleRandomAttack } from './attackHandler.js';
 
 export function handleMessage(ws: WebSocket, message: WSMessage): void {
   switch (message.type) {
@@ -18,6 +19,12 @@ export function handleMessage(ws: WebSocket, message: WSMessage): void {
       break;
     case 'add_ships':
       handleAddShips(ws, message);
+      break;
+    case 'attack':
+      handleAttack(ws, message);
+      break;
+    case 'randomAttack':
+      handleRandomAttack(ws, message);
       break;
     default:
       console.log('Unknown message type:', message.type);
