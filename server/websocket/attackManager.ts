@@ -12,11 +12,15 @@ export function processAttack(
   if (!opponent) {
     return { status: 'miss' };
   }
+  console.log(
+    `Checking opponent ${opponent.index} ships, attacker ${attackerIndex}, shot (${x},${y})`
+  );
 
   for (let i = 0; i < opponent.ships.length; i++) {
     const ship = opponent.ships[i];
     const hit = checkShipHit(ship, x, y);
     if (hit) {
+      console.log(`Hit on opponent ${opponent.index} ship at (${x},${y})`);
       return handleShipHit(gameSession.gameId, opponent.index, i, ship, x, y);
     }
   }
@@ -26,11 +30,15 @@ export function processAttack(
 function checkShipHit(ship: Ship, x: number, y: number): boolean {
   if (ship.direction) {
     const hit = y === ship.position.y && x >= ship.position.x && x < ship.position.x + ship.length;
-    console.log(`Horizontal check: ${hit}`);
+    console.log(
+      `Horizontal check: ${hit} for ship at (${ship.position.x},${ship.position.y}) length ${ship.length}, shot (${x},${y})`
+    );
     return hit;
   } else {
     const hit = x === ship.position.x && y >= ship.position.y && y < ship.position.y + ship.length;
-    console.log(`Vertical check: ${hit}`);
+    console.log(
+      `Vertical check: ${hit} for ship at (${ship.position.x},${ship.position.y}) length ${ship.length}, shot (${x},${y})`
+    );
     return hit;
   }
 }
