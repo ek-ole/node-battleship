@@ -5,11 +5,12 @@ const gameSessions = new Map<number, GameSession>();
 export function createGameSession(room: Room): GameSession {
   const gameSession: GameSession = {
     gameId: room.roomId,
-    players: room.roomUsers.map(player => ({
+    players: room.roomUsers.map((player) => ({
       index: player.index,
+      ws: player.ws,
       ships: [],
-      ready: false
-    }))
+      ready: false,
+    })),
   };
 
   gameSessions.set(room.roomId, gameSession);

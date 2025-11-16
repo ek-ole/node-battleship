@@ -71,6 +71,7 @@ export interface GameSession {
   gameId: number;
   players: {
     index: number;
+    ws: WebSocket;
     ships: Ship[];
     ready: boolean;
   }[];

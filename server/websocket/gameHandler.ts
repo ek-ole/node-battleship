@@ -49,6 +49,9 @@ export function sendStartGame(gameId: number): void {
   const gameSession = getGameSession(gameId);
   if (!gameSession) return;
 
+  const randomPlayerIndex = Math.floor(Math.random() * 2);
+  const firstPlayer = gameSession.players[randomPlayerIndex];
+
   gameSession.players.forEach(player => {
     const startGameMessage = {
       type: 'start_game',
@@ -58,6 +61,21 @@ export function sendStartGame(gameId: number): void {
       } as StartGameResponseData),
       id: 0,
     };
-     console.log(`Would send start_game to player ${player.index}:`, startGameMessage);
+    sendToPlayer(player.ws, startGameMessage)
+     console.log(`Would send start_game to player ${player.index}`);
   });
+
+  const turnMessage = {
+    type: 'turn',
+    data: JSON.stringify({
+      currentPlayer: firstPlayer.index  
+    }),
+    id: 0
+  };
+
+  gameSession.players.forEach(player => {
+    sendToPlayer(player.ws, turnMessage);
+  });
+
+  console.log(`First turn: player ${firstPlayer.index}`);
 }
