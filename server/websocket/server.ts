@@ -1,5 +1,5 @@
 import { WebSocketServer, WebSocket } from 'ws';
-import { WSMessage } from '../game/types.js';
+import { WSMessage } from './types.js';
 import { handleMessage } from './messageHandler.js';
 import { gameStorage } from './storage.js';
 

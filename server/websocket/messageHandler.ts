@@ -1,6 +1,8 @@
 import { WebSocket } from 'ws';
-import { WSMessage } from '../game/types.js';
+import { RegRequestData, WSMessage } from './types.js';
 import { gameStorage, getNextPlayerId } from './storage.js';
+import { handleAddUserToRoom, handleCreateRoom } from './roomHandler.js';
+import { sendToPlayer } from './messageSender.js';
 
 export function handleMessage(ws: WebSocket, message: WSMessage): void {
   switch (message.type) {
@@ -10,17 +12,21 @@ export function handleMessage(ws: WebSocket, message: WSMessage): void {
     case 'create_room':
       handleCreateRoom(ws);
       break;
+    case 'add_user_to_room':
+      handleAddUserToRoom(ws, message);
+      break;
     default:
       console.log('Unknown message type:', message.type);
   }
 }
 
 function handleRegCommand(ws: WebSocket, message: WSMessage): void {
-  let userData;
+  let userData: RegRequestData;
+
   if (typeof message.data === 'string') {
     userData = JSON.parse(message.data);
   } else {
-    userData = message.data;
+    userData = message.data as RegRequestData;
   }
   console.log('Processing registration for:', userData.name);
 
@@ -44,9 +50,9 @@ function handleRegCommand(ws: WebSocket, message: WSMessage): void {
     id: 0,
   };
 
-  const responseString = JSON.stringify(response);
-  console.log('Sending response:', responseString);
-  ws.send(responseString);
+  
+  console.log('Sending response:', response);
+  sendToPlayer(ws, response);
 
   console.log(`Total players registered: ${gameStorage.players.size}`);
   console.log('Current players:');
@@ -55,55 +61,6 @@ function handleRegCommand(ws: WebSocket, message: WSMessage): void {
   });
 }
 
-function handleCreateRoom(ws: WebSocket): void {
-  const player = gameStorage.players.get(ws);
 
-  if (!player) {
-    console.log('Player not found for create_room');
-    return;
-  }
 
-  const existingRoom = gameStorage.rooms.find((room) =>
-    room.roomUsers.some((user) => user.index === player.index)
-  );
 
-  if (existingRoom) {
-    console.log(`Player ${player.name} is already in room ${existingRoom.roomId}`)
-    return;
-  }
-  
-  console.log(`Creating room for player: ${player.name}`);
-
-  const newRoom = {
-    roomId: gameStorage.rooms.length + 1,
-    roomUsers: [player],
-  };
-
-  gameStorage.rooms.push(newRoom);
-
-  console.log(`Room created: ${newRoom.roomId} with player ${player.name}`);
-  console.log(`Total rooms: ${gameStorage.rooms.length}`);
-
-  sendUpdateRoomToAll();
-}
-
-function sendUpdateRoomToAll(): void {
-  const updateMessage = {
-    type: 'update_room',
-    data: JSON.stringify(
-      gameStorage.rooms.map((room) => ({
-        roomId: room.roomId,
-        roomUsers: room.roomUsers.map((user) => ({
-          name: user.name,
-          index: user.index,
-        })),
-      }))
-    ),
-    id: 0,
-  };
-
-  gameStorage.players.forEach((player) => {
-    player.ws.send(JSON.stringify(updateMessage));
-  });
-  console.log('Sent update_room to all clients');
-}
