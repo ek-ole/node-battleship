@@ -2,7 +2,7 @@ import { WebSocket } from 'ws';
 import { WSMessage } from './types.js';
 import { getGameSession } from './gameManager.js';
 import { sendToPlayer } from './messageSender.js';
-import { processAttack } from './attackManager.js';
+import { checkGameFinished, processAttack } from './attackManager.js';
 import { getCurrentPlayer, switchTurn, recordAttack } from './gameStateManager.js';
 
 export function handleAttack(ws: WebSocket, message: WSMessage): void {
@@ -83,6 +83,21 @@ export function handleAttack(ws: WebSocket, message: WSMessage): void {
       gameSession.players.forEach((player) => {
         sendToPlayer(player.ws, surroundingMissMessage);
       });
+    });
+  }
+
+  if (checkGameFinished(gameSession, indexPlayer)) {
+    console.log(`Game ${gameId} finished! Player ${indexPlayer} wins!`);
+
+    const finishMessage = {
+      type: 'finish',
+      data: JSON.stringify({
+        winPlayer: indexPlayer,
+      }),
+      id: 0,
+    };
+    gameSession.players.forEach((player) => {
+      sendToPlayer(player.ws, finishMessage);
     });
   }
 }

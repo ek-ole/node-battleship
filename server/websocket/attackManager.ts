@@ -83,3 +83,18 @@ function getSurroundingCells(ship: Ship): Position[] {
 
   return cells;
 }
+
+export function checkGameFinished(gameSession: GameSession, attackerIndex: number): boolean {
+  const opponent = gameSession.players.find((p) => p.index !== attackerIndex);
+  if (!opponent) return false;
+
+  for (let i = 0; i < opponent.ships.length; i++) {
+    const ship = opponent.ships[i];
+    const hitKey = `${gameSession.gameId}-${opponent.index}-${i}`;
+
+    if (!shipHits.has(hitKey) || shipHits.get(hitKey)!.length < ship.length) {
+      return false;
+    }
+  }
+  return true;
+}
