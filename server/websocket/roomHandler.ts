@@ -1,7 +1,10 @@
 import { WebSocket } from 'ws';
-import { findPlayerByWs, gameStorage, isPlayerInAnyRoom } from './storage.js';
+import { findPlayerByWs, gameStorage } from './storage.js';
 import { sendUpdateRoomToAll } from './messageSender.js';
 import { AddUserToRoomRequestData, WSMessage } from './types.js';
+import { startGame } from './gameHandler.js';
+import { createRoom, isRoomFull, removeRoom } from './roomManager.js';
+import { addPlayerToRoom, isPlayerInRoom, removePlayerFromAllRooms } from './playerManager.js';
 
 export function handleCreateRoom(ws: WebSocket): void {
   const player = findPlayerByWs(ws);
@@ -11,19 +14,9 @@ export function handleCreateRoom(ws: WebSocket): void {
     return;
   }
 
-  if (isPlayerInAnyRoom(player.index)) {
-    console.log(`Player ${player.name} is already in room`);
-    return;
-  }
+  removePlayerFromAllRooms(player.index);
 
-  console.log(`Creating room for player: ${player.name}`);
-
-  const newRoom = {
-    roomId: gameStorage.rooms.length + 1,
-    roomUsers: [player],
-  };
-
-  gameStorage.rooms.push(newRoom);
+  const newRoom = createRoom(player);
 
   console.log(`Room created: ${newRoom.roomId} with player ${player.name}`);
   console.log(`Total rooms: ${gameStorage.rooms.length}`);
@@ -49,48 +42,28 @@ export function handleAddUserToRoom(ws: WebSocket, message: WSMessage): void {
 
   console.log(`Player ${player.name} wants to join room ${roomData.indexRoom}`);
 
-  const targetRoom = gameStorage.rooms.find(r => r.roomId === roomData.indexRoom);
+  const targetRoom = gameStorage.rooms.find((r) => r.roomId === roomData.indexRoom);
   if (!targetRoom) return;
 
-  if (targetRoom.roomUsers.some(user => user.index === player.index)) {
-    console.log(`Playr ${player.name} is alrady in this room`);
+  if (isPlayerInRoom(player.index, targetRoom)) {
+    console.log(`Playr ${player.name} is already in this room`);
     return;
   }
 
-  if (targetRoom.roomUsers.length >=2) return;
+  if (isRoomFull(targetRoom)) return;
 
-  gameStorage.rooms = gameStorage.rooms.filter(room => {
-    if (room.roomUsers.some(user => user.index === player.index)) {
-      console.log(`Removing player ${player.name} from room ${room.roomId}`);
-      room.roomUsers = room.roomUsers.filter(user => user.index !== player.index);
-      return room.roomUsers.length > 0;
-    }
-    return true;
-  })
+  removePlayerFromAllRooms(player.index);
 
-  targetRoom.roomUsers.push(player);
+  addPlayerToRoom(player, targetRoom);
   console.log(`Player ${player.name} joined room ${targetRoom.roomId}`);
 
-  if (targetRoom.roomUsers.length === 2) {
+  if (isRoomFull(targetRoom)) {
     console.log(`Room ${targetRoom.roomId} is full, starting game`);
 
-    targetRoom.roomUsers.forEach((player) => {
-      const createGameMessage = {
-        type: 'create_game',
-        data: JSON.stringify({
-          idGame: targetRoom.roomId,
-          idPlayer: player.index,
-        }),
-        id: 0,
-      };
-      player.ws.send(JSON.stringify(createGameMessage));
-      console.log(`Sent create_game to player ${player.name}`);
-    });
+    startGame(targetRoom);
 
-    gameStorage.rooms = gameStorage.rooms.filter(room => room.roomId !== targetRoom.roomId);
-    console.log(`Room ${targetRoom.roomId} removed from available rooms`);
+    removeRoom(targetRoom.roomId);
 
     sendUpdateRoomToAll();
   }
 }
-
