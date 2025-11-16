@@ -45,3 +45,33 @@ export interface CreateGameResponseData {
   idGame: number;
   idPlayer: number;
 }
+
+export interface Ship {
+  position: {
+    x: number;
+    y: number;
+  };
+  direction: boolean;
+  length: number;
+  type: 'small' | 'medium' | 'large' | 'huge';
+}
+
+export interface AddShipsRequestData {
+  gameId: number;
+  ships: Ship[];
+  indexPlayer: number;
+}
+
+export interface StartGameResponseData {
+  ships: Ship[];
+  currentPlayerIndex: number;
+}
+
+export interface GameSession {
+  gameId: number;
+  players: {
+    index: number;
+    ships: Ship[];
+    ready: boolean;
+  }[];
+}

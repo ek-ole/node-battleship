@@ -3,6 +3,7 @@ import { RegRequestData, WSMessage } from './types.js';
 import { gameStorage, getNextPlayerId } from './storage.js';
 import { handleAddUserToRoom, handleCreateRoom } from './roomHandler.js';
 import { sendToPlayer, sendUpdateRoomToAll } from './messageSender.js';
+import { handleAddShips } from './gameHandler.js';
 
 export function handleMessage(ws: WebSocket, message: WSMessage): void {
   switch (message.type) {
@@ -14,6 +15,9 @@ export function handleMessage(ws: WebSocket, message: WSMessage): void {
       break;
     case 'add_user_to_room':
       handleAddUserToRoom(ws, message);
+      break;
+    case 'add_ships':
+      handleAddShips(ws, message);
       break;
     default:
       console.log('Unknown message type:', message.type);
